@@ -1,0 +1,125 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+
+Parameters:
+  BaseStackName:
+    Type: String
+    Default: xilution-todomvc-base
+  XilutionClientId:
+    Type: String
+
+Globals:
+  Function:
+    Runtime: nodejs14.x
+    Environment:
+      Variables:
+        XilutionClientId: !Ref XilutionClientId
+    MemorySize: 128
+    Timeout: 60
+  Api:
+    Cors:
+      AllowHeaders: "'content-type, authorization'"
+      AllowOrigin: "'*'"
+
+Resources:
+  AuthenticateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: xilution-todomvc-authenticate-function
+      CodeUri: ../../dist/backend/
+      Handler: index.doAuthenticate
+      Role:
+        Fn::ImportValue:
+          Fn::Sub: "${BaseStackName}-lambda-execution-role-arn"
+      Events:
+        PostResource:
+          Type: Api
+          Properties:
+            Path: /authenticate
+            Method: post
+
+  FetchTodosFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: xilution-todomvc-fetch-todos-function
+      CodeUri: ../../dist/backend/
+      Handler: index.doFetchTodos
+      Role:
+        Fn::ImportValue:
+          Fn::Sub: "${BaseStackName}-lambda-execution-role-arn"
+      Events:
+        PostResource:
+          Type: Api
+          Properties:
+            Path: /todos
+            Method: get
+
+  PostTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: xilution-todomvc-post-todo-function
+      CodeUri: ../../dist/backend/
+      Handler: index.doPostTodo
+      Role:
+        Fn::ImportValue:
+          Fn::Sub: "${BaseStackName}-lambda-execution-role-arn"
+      Events:
+        PostResource:
+          Type: Api
+          Properties:
+            Path: /todos
+            Method: post
+
+  PutTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: xilution-todomvc-put-todo-function
+      CodeUri: ../../dist/backend/
+      Handler: index.doPutTodo
+      Role:
+        Fn::ImportValue:
+          Fn::Sub: "${BaseStackName}-lambda-execution-role-arn"
+      Events:
+        PostResource:
+          Type: Api
+          Properties:
+            Path: /todos/{id}
+            Method: put
+
+  GetTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: xilution-todomvc-get-todo-function
+      CodeUri: ../../dist/backend/
+      Handler: index.doGetTodo
+      Role:
+        Fn::ImportValue:
+          Fn::Sub: "${BaseStackName}-lambda-execution-role-arn"
+      Events:
+        PostResource:
+          Type: Api
+          Properties:
+            Path: /todos/{id}
+            Method: get
+
+  DeleteTodoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: xilution-todomvc-delete-todo-function
+      CodeUri: ../../dist/backend/
+      Handler: index.doDeleteTodo
+      Role:
+        Fn::ImportValue:
+          Fn::Sub: "${BaseStackName}-lambda-execution-role-arn"
+      Events:
+        PostResource:
+          Type: Api
+          Properties:
+            Path: /todos/{id}
+            Method: delete
+
+Outputs:
+  ApiURL:
+    Description: API endpoint URL for Xilution todo MVC example.
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
